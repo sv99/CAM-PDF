@@ -5367,7 +5367,17 @@ sub _writeDictionary
             return $self->writeAny(CAM::PDF::Node->new('hexstring', $unpacked, $objnode->{objnum}, $objnode->{gennum}));
          }
 
+         # handle /XRef need more investigation
+         # if (12 == scalar keys %{$val} && (exists $val->{Length} || exists $val->{L}))
+         # {
+         #    my $binary = $val->{$dictkey}->{value};
+         #    my $len = length $binary;
+         #    my $unpacked = unpack 'H' . $len*2, $binary;
+         #    return $self->writeAny(CAM::PDF::Node->new('hexstring', $unpacked, $objnode->{objnum}, $objnode->{gennum}));
+         # }
+
          # TODO: Handle more complex streams ...
+         $self->_dictInfo($val);
          die "This stream is too complex for me to write... Giving up\n";
 
          next; ## no critic(ControlStructures::ProhibitUnreachableCode)
@@ -5393,6 +5403,19 @@ sub _writeDictionary
       $str = join "\n", @strs, $str;
    }
    return '<< ' . $str . ' >>';
+}
+
+sub _dictInfo
+{
+   my $self = shift;
+   my $dict = shift;
+   if (exists $dict->{Type}) {
+      print "Dict Type: " . $self->writeAny($dict->{Type}) . "\n";
+   }
+   my @allKeys = sort keys %{$dict};
+   my @scalarKeys = scalar keys %{$dict};
+   print "All keys: @allKeys\n";
+   print "Scalar keys: @scalarKeys\n";
 }
 
 sub _writeObject
